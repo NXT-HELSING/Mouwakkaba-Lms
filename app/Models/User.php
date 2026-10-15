@@ -14,13 +14,26 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'password',
-        'phone', 'avatar', 'bio', 'city', 'expertise',
-        'date_of_birth', 'gender', 'status', 'organization_id',
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'phone',
+        'avatar',
+        'bio',
+        'city',
+        'expertise',
+        'date_of_birth',
+        'gender',
+        'status',
+        'organization_id',
         'last_login_at',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
@@ -29,6 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     // Relationships
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);
@@ -64,7 +78,38 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(LessonProgress::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(PostLike::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function createdOrganizations()
+    {
+        return $this->hasMany(Organization::class, 'created_by');
+    }
+
+    public function createdCourses()
+    {
+        return $this->hasMany(Course::class, 'created_by');
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class, 'created_by');
+    }
+
     // Accessors
+
     public function getFullNameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
@@ -74,10 +119,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->avatar
             ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . '&background=1F3864&color=fff';
+            : 'https://ui-avatars.com/api/?name='
+                . urlencode($this->full_name)
+                . '&background=1F3864&color=fff';
     }
 
     // Scopes
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
